@@ -1,6 +1,7 @@
 import openai
 from typing import List, Dict
 
+
 def refine_transcript(transcript: Dict, diarization) -> str:
     """Use OpenAI API to map speaker IDs to names and clean the transcript."""
 
@@ -29,7 +30,7 @@ def analyze_impact(transcript_text: str) -> List[Dict[str, float]]:
     openai.api_key = os.getenv("OPENAI_API_KEY")
     prompt = (
         "Identify the most impactful moments in the transcript and return a JSON "
-        "array of objects with 'start' and 'end' fields in seconds."\
+        "array of objects with 'start' and 'end' fields in seconds."
         f"\n\nTranscript:\n{transcript_text}"
     )
     response = openai.ChatCompletion.create(
@@ -39,5 +40,3 @@ def analyze_impact(transcript_text: str) -> List[Dict[str, float]]:
     )
     segments = json.loads(response.choices[0].message.content)
     return segments
-
-

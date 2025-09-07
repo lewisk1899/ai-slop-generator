@@ -4,12 +4,13 @@ import os
 import subprocess
 
 from typing import List, Dict
-from download import download_youtube_video 
-from audio import extract_audio, transcribe_audio, diarize_audio 
+from download import download_youtube_video
+from audio import extract_audio, transcribe_audio, diarize_audio
+
 
 def run_pipeline(url: str, model_size: str = "base") -> None:
     print(f"Downloading youtube video")
-    #video = download_youtube_video(url)
+    # video = download_youtube_video(url)
     video = "downloads/Nek Minute - Original.mp4"
     print(f"Finished Downloading Youtube Video")
 
@@ -21,11 +22,11 @@ def run_pipeline(url: str, model_size: str = "base") -> None:
     transcript = transcribe_audio(audio, model_size)
     print("Finished Transcription")
 
-    #diarization = diarize_audio(audio)
+    # diarization = diarize_audio(audio)
 
-    #refined = refine_transcript(transcript, diarization)
-    #segments = analyze_impact(refined)
-    #clips = generate_clips(video, segments)
+    # refined = refine_transcript(transcript, diarization)
+    # segments = analyze_impact(refined)
+    # clips = generate_clips(video, segments)
 
     with open("transcript.json", "w") as fh:
         json.dump(transcript, fh, indent=2)
@@ -44,7 +45,9 @@ def run_pipeline(url: str, model_size: str = "base") -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run the end-to-end video processing pipeline")
+    parser = argparse.ArgumentParser(
+        description="Run the end-to-end video processing pipeline"
+    )
     parser.add_argument("url", help="YouTube video URL")
     parser.add_argument("--model-size", default="base", help="Whisper model size")
 

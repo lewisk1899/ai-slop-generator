@@ -1,0 +1,75 @@
+{
+  "text": " lift my scooter outside the theory, nick manate at least my scooter outside the theory, nick manate nick manate",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 7.0,
+      "text": " lift my scooter outside the theory, nick manate",
+      "tokens": [
+        50364,
+        5533,
+        452,
+        30441,
+        2380,
+        264,
+        5261,
+        11,
+        15416,
+        587,
+        473,
+        50714
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.9677808625357491,
+      "compression_ratio": 0.9215686274509803,
+      "no_speech_prob": 0.356108695268631
+    },
+    {
+      "id": 1,
+      "seek": 700,
+      "start": 7.0,
+      "end": 14.0,
+      "text": " at least my scooter outside the theory, nick manate",
+      "tokens": [
+        50364,
+        412,
+        1935,
+        452,
+        30441,
+        2380,
+        264,
+        5261,
+        11,
+        15416,
+        587,
+        473,
+        50714
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.4134782041822161,
+      "compression_ratio": 0.9272727272727272,
+      "no_speech_prob": 0.13296107947826385
+    },
+    {
+      "id": 2,
+      "seek": 3700,
+      "start": 37.0,
+      "end": 44.0,
+      "text": " nick manate",
+      "tokens": [
+        50414,
+        15416,
+        587,
+        473,
+        50714
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.5974993308385214,
+      "compression_ratio": 0.5789473684210527,
+      "no_speech_prob": 0.3415144383907318
+    }
+  ],
+  "language": "en"
+}

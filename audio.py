@@ -3,6 +3,7 @@ import os
 
 from typing import Dict
 
+
 def extract_audio(video_path: str, output_dir: str = "audio") -> str:
     """Extract mono 16kHz WAV audio from the downloaded video."""
     os.makedirs(output_dir, exist_ok=True)
@@ -40,5 +41,3 @@ def diarize_audio(audio_path: str):
     pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization")
     diarization = pipeline(audio_path)
     return diarization
-
-

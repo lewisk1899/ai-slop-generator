@@ -2,7 +2,10 @@ from typing import List, Dict
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 import os
 
-def generate_clips(video_path: str, segments: List[Dict[str, float]], output_dir: str = "clips") -> List[str]:
+
+def generate_clips(
+    video_path: str, segments: List[Dict[str, float]], output_dir: str = "clips"
+) -> List[str]:
     """Generate video clips based on the provided segments."""
     os.makedirs(output_dir, exist_ok=True)
     clip_paths = []
@@ -13,6 +16,3 @@ def generate_clips(video_path: str, segments: List[Dict[str, float]], output_dir
         ffmpeg_extract_subclip(video_path, start, end, targetname=clip_path)
         clip_paths.append(clip_path)
     return clip_paths
-
-
-
