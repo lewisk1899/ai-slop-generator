@@ -1,7 +1,10 @@
 import subprocess
 import os
 
+from pyannote.audio import Pipeline
 from typing import Dict
+import torch
+import whisper
 
 
 def extract_audio(video_path: str, output_dir: str = "audio") -> str:
@@ -27,17 +30,16 @@ def extract_audio(video_path: str, output_dir: str = "audio") -> str:
 
 def transcribe_audio(audio_path: str, model_size: str = "base") -> Dict:
     """Transcribe audio using Whisper."""
-    import whisper
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    model = whisper.load_model(model_size)
+    model = whisper.load_model(model_size, device=device)
     result = model.transcribe(audio_path)
     return result
 
 
 def diarize_audio(audio_path: str):
     """Run speaker diarization on the audio and return pyannote results."""
-    from pyannote.audio import Pipeline
-
     pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization")
     diarization = pipeline(audio_path)
     return diarization
+
