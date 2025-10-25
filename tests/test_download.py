@@ -1,6 +1,6 @@
 import unittest
 import tempfile
-from download import download_youtube_video
+from src.download import download_youtube_video
 
 
 class TestDownload(unittest.TestCase):
@@ -10,8 +10,9 @@ class TestDownload(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tempdir:
             # Act
             video_path = download_youtube_video(nekk_minutt_url, tempdir)
+            video_name = video_path.split("/")[-1]
             # Assert
-            self.assertEqual(video_path, "downloads/'Nek Minute - Original.mp4'")
+            self.assertEqual(video_name, "Nek Minute - Original.mp4")
 
 
 
