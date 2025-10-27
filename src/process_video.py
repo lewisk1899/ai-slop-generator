@@ -7,7 +7,6 @@ from typing import List, Dict
 from download import download_youtube_video
 from audio import extract_audio, transcribe_audio, diarize_audio
 
-
 def run_pipeline(url: str, model_size: str = "base") -> None:
     print(f"Downloading youtube video")
     # video = download_youtube_video(url)
@@ -22,7 +21,7 @@ def run_pipeline(url: str, model_size: str = "base") -> None:
     transcript = transcribe_audio(audio, model_size)
     print("Finished Transcription")
 
-    # diarization = diarize_audio(audio)
+    diarization = diarize_audio(audio)
 
     # refined = refine_transcript(transcript, diarization)
     # segments = analyze_impact(refined)
