@@ -13,6 +13,6 @@ def generate_clips(
         start = float(segment["start"])
         end = float(segment["end"])
         clip_path = os.path.join(output_dir, f"clip_{idx + 1}.mp4")
-        ffmpeg_extract_subclip(video_path, start, end, targetname=clip_path)
+        ffmpeg_extract_subclip(video_path, start, end)
         clip_paths.append(clip_path)
     return clip_paths

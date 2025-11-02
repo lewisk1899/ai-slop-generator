@@ -1,10 +1,12 @@
-import openai
+from openai import OpenAI
+import os
+import json
 from typing import List, Dict
 from dotenv import load_dotenv
 
 load_dotenv("ai-slop.env")
 
-OPENAI_API_KEY=os.getenv("OPENAI_API_KEY")
+OPENAI_API_KEY=os.getenv("OPEN_AI_KEY")
 
 def refine_transcript(transcript: Dict, diarization) -> str:
     """Use OpenAI API to map speaker IDs to names and clean the transcript."""
@@ -21,7 +23,7 @@ def refine_transcript(transcript: Dict, diarization) -> str:
         f"{json.dumps(transcript)}\n\nDiarization:\n{diarization_text}"
     )
 
-    response = openai.ChatCompletion.create(
+    response = openai.responses.create(
         model="gpt-5-nano",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.2,
@@ -31,16 +33,16 @@ def refine_transcript(transcript: Dict, diarization) -> str:
 
 def analyze_impact(transcript_text: str) -> List[Dict[str, float]]:
     """Ask the OpenAI API for a list of impactful segments."""
-    openai.api_key = OPENAI_API_KEY 
+    client = OpenAI(api_key = OPENAI_API_KEY)
     prompt = (
-        "Identify the most impactful moments in the transcript and return a JSON "
+        "Read the transcript and return the single most interesting time section in a json JSON "
         "array of objects with 'start' and 'end' fields in seconds."
         f"\n\nTranscript:\n{transcript_text}"
     )
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.3,
+    response = client.responses.create(
+        model="gpt-5-nano",
+        input=prompt,
     )
-    segments = json.loads(response.choices[0].message.content)
-    return segments
+    data = json.loads(response.output_text)
+    #segments = json.loads(response.choices[0].message.content)
+    return data 
