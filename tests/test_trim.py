@@ -30,9 +30,9 @@ class TrimTest(unittest.TestCase):
 
         # clear the directory
         for filename in os.listdir(current_dir):
-            file_path = os.path.join(current_dir, filename)
-            if os.path.isfile(current_dir):
-                os.remove(current_dir)
+            clip_path = os.path.join(current_dir, filename)
+            if os.path.isfile(clip_path):
+                os.remove(clip_path)
 
         trim(file_path, out_path, time_stamps)
 
@@ -46,6 +46,12 @@ class TrimTest(unittest.TestCase):
 
         self.assertEqual(num_clips, 2)
 
+        # clear the directory
+        for filename in os.listdir(current_dir):
+            clip_path = os.path.join(current_dir, filename)
+            if os.path.isfile(clip_path):
+                os.remove(clip_path)
+
     def test_clip_names(self):
         file_path = "downloads/Nek Minute - Original.mp4"
         out_path = "clips"
@@ -56,9 +62,9 @@ class TrimTest(unittest.TestCase):
 
         # clear the directory
         for filename in os.listdir(current_dir):
-            file_path = os.path.join(current_dir, filename)
-            if os.path.isfile(file_path):
-                os.remove(file_path)
+            clip_path = os.path.join(current_dir, filename)
+            if os.path.isfile(clip_path):
+                os.remove(clip_path)
 
         trim(file_path, out_path, time_stamps)
 
