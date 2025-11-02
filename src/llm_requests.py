@@ -32,20 +32,33 @@ def refine_transcript(transcript: Dict, diarization) -> str:
     return response.choices[0].message.content
 
 
-def analyze_impact(transcript_text: str) -> List[Dict[str, float]]:
+def analyze_impact(transcript_text: str, interesting_prompt: str) -> List[Dict[str, float]]:
     """Ask the OpenAI API for a list of impactful segments."""
     client = OpenAI(api_key = OPENAI_API_KEY)
     prompt = f"""
     You are given a list of transcript segments, each with start, end, and text.
 
-    Your goal: select one contiguous block of segments (for example: [2,3,4] but not [2,4])
-    that forms the most interesting or engaging part of the transcript.
+    Your goal: select MULTIPLE contiguous blocks of segments (for example a single contiguous block would look like: [2,3,4] but not [2,4])
+    that forms the most interesting or engaging parts of the transcript.
+
+    Another example: if you read the transcript, and find segments [1,2] intersting as well as [4,5], then you ought to return those to segments.
+
+    Interestingness is defined as: "{interesting_prompt}",
 
     Rules:
     1. The selected segments must be sequential in the input order.
     2. The total time window (last_segment.end - first_segment.start) must be ≤ {NUM_SECONDS_MAX} seconds.
-    3. Choose the block that maximizes overall "interestingness" within that limit.
-    4. Output JSON only in this format:
+    3. Choose the blocks that maximizes overall "interestingness" within that limit.
+    4. Choose more than one block if there are numerous interesting blocks.
+    5. Output JSON only in this format:
+    6. The title needs to be interesting as well, write it like a Zoomer would.
+    [{{
+      "start_time": <float>,
+      "end_time": <float>,
+      "segment_ids": [<ints>],
+      "reason": "<why this section is most interesting>",
+      "title": "<a good title for this clip>"
+    }},
     {{
       "start_time": <float>,
       "end_time": <float>,
@@ -53,13 +66,14 @@ def analyze_impact(transcript_text: str) -> List[Dict[str, float]]:
       "reason": "<why this section is most interesting>",
       "title": "<a good title for this clip>"
     }}
+    ]
 
     Segments:
     {json.dumps(transcript_text["segments"], indent=2)}
     """
 
     response = client.responses.create(
-        model="gpt-5-nano",
+        model="gpt-5-mini",
         input=prompt,
     )
     data = json.loads(response.output_text)
