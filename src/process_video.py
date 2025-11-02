@@ -6,6 +6,8 @@ import subprocess
 from typing import List, Dict
 from download import download_youtube_video
 from audio import extract_audio, transcribe_audio, diarize_audio
+from llm_requests import refine_transcript, analyze_impact 
+from clip_editor import generate_clips
 
 def run_pipeline(url: str, model_size: str = "base") -> None:
     print(f"Downloading youtube video")
@@ -19,19 +21,22 @@ def run_pipeline(url: str, model_size: str = "base") -> None:
 
     print("Transcribing Audio")
     transcript = transcribe_audio(audio, model_size)
+    with open("transcript.json", "w") as fh:
+        json.dump(transcript, fh, indent=2)
     print("Finished Transcription")
 
+    """
     diarization = diarize_audio(audio)
     for segment, _, speaker in diarization.itertracks(yield_label=True):
         print(f"{segment.start:.1f}s - {segment.end:.1f}s: speaker {speaker}")
+    """
 
     # refined = refine_transcript(transcript, diarization)
-    # segments = analyze_impact(refined)
-    # clips = generate_clips(video, segments)
+    segments = [{'start': 7.0, 'end': 14.0}] #analyze_impact(transcript)
+    print(f"The most interesting segments is: {segments}")
+    clips = generate_clips(video, segments)
 
-    with open("transcript.json", "w") as fh:
-        json.dump(transcript, fh, indent=2)
-        
+       
     """
     with open("diarization.json", "w") as fh:
         json.dump(diarization, fh, indent=2)
