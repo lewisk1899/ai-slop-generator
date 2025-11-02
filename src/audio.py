@@ -44,7 +44,7 @@ def transcribe_audio(audio_path: str, model_size: str = "base") -> Dict:
 
 def diarize_audio(audio_path: str):
     """Run speaker diarization on the audio and return pyannote results."""
-    pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization", use_auth_token=HF_AUTH_TOKEN)
+    pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1", use_auth_token=HF_AUTH_TOKEN)
     diarization = pipeline(audio_path)
     return diarization
 
