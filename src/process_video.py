@@ -22,6 +22,8 @@ def run_pipeline(url: str, model_size: str = "base") -> None:
     print("Finished Transcription")
 
     diarization = diarize_audio(audio)
+    for segment, _, speaker in diarization.itertracks(yield_label=True):
+        print(f"{segment.start:.1f}s - {segment.end:.1f}s: speaker {speaker}")
 
     # refined = refine_transcript(transcript, diarization)
     # segments = analyze_impact(refined)
@@ -29,6 +31,7 @@ def run_pipeline(url: str, model_size: str = "base") -> None:
 
     with open("transcript.json", "w") as fh:
         json.dump(transcript, fh, indent=2)
+        
     """
     with open("diarization.json", "w") as fh:
         json.dump(diarization, fh, indent=2)
