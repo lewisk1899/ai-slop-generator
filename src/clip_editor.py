@@ -10,9 +10,9 @@ def generate_clips(
     os.makedirs(output_dir, exist_ok=True)
     clip_paths = []
     for idx, segment in enumerate(segments):
-        start = float(segment["start"])
-        end = float(segment["end"])
-        clip_path = os.path.join(output_dir, f"clip_{idx + 1}.mp4")
+        start = float(segment["start_time"])
+        end = float(segment["end_time"])
+        clip_path = os.path.join(output_dir, f"{segment["title"]}.mp4")
         ffmpeg_extract_subclip(video_path, start, end)
         clip_paths.append(clip_path)
     return clip_paths

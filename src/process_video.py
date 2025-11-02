@@ -12,7 +12,7 @@ from clip_editor import generate_clips
 def run_pipeline(url: str, model_size: str = "base", dry_run=False) -> None:
     print(f"Downloading youtube video")
     video = download_youtube_video(url, dry_run=dry_run)
-    video = "downloads/Nek Minute - Original.mp4"
+    #video = "downloads/Nek Minute - Original.mp4"
     print(f"Finished Downloading Youtube Video")
 
     print("Extracting Audio")
@@ -32,11 +32,14 @@ def run_pipeline(url: str, model_size: str = "base", dry_run=False) -> None:
     """
 
     # refined = refine_transcript(transcript, diarization)
-    segments = [{'start': 7.0, 'end': 14.0}] #analyze_impact(transcript)
+    segments = analyze_impact(transcript)
     print(f"The most interesting segments is: {segments}")
-    clips = generate_clips(video, segments)
+    clips = generate_clips(video, [segments])
 
-       
+    print("Generated clips:")
+    for clip in clips:
+        print(f" - {clip}")
+      
     """
     with open("diarization.json", "w") as fh:
         json.dump(diarization, fh, indent=2)
@@ -44,10 +47,6 @@ def run_pipeline(url: str, model_size: str = "base", dry_run=False) -> None:
         fh.write(refined)
     with open("segments.json", "w") as fh:
         json.dump(segments, fh, indent=2)
-
-    print("Generated clips:")
-    for clip in clips:
-        print(f" - {clip}")
     """
 
 
