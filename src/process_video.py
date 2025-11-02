@@ -7,10 +7,11 @@ from typing import List, Dict
 from download import download_youtube_video
 from audio import extract_audio, transcribe_audio, diarize_audio
 
+
 def run_pipeline(url: str, model_size: str = "base") -> None:
     print(f"Downloading youtube video")
     # video = download_youtube_video(url)
-    video = "downloads/Nek Minute - Original.mp4"
+    video = "downloads/2 minutes of random Joe Rogan clips.mkv"
     print(f"Finished Downloading Youtube Video")
 
     print("Extracting Audio")
@@ -21,9 +22,9 @@ def run_pipeline(url: str, model_size: str = "base") -> None:
     transcript = transcribe_audio(audio, model_size)
     print("Finished Transcription")
 
-    diarization = diarize_audio(audio)
-    for segment, _, speaker in diarization.itertracks(yield_label=True):
-        print(f"{segment.start:.1f}s - {segment.end:.1f}s: speaker {speaker}")
+    # diarization = diarize_audio(audio)
+    # for segment, _, speaker in diarization.itertracks(yield_label=True):
+    #     print(f"{segment.start:.1f}s - {segment.end:.1f}s: speaker {speaker}")
 
     # refined = refine_transcript(transcript, diarization)
     # segments = analyze_impact(refined)
@@ -31,7 +32,7 @@ def run_pipeline(url: str, model_size: str = "base") -> None:
 
     with open("transcript.json", "w") as fh:
         json.dump(transcript, fh, indent=2)
-        
+
     """
     with open("diarization.json", "w") as fh:
         json.dump(diarization, fh, indent=2)
