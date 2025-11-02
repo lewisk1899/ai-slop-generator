@@ -32,7 +32,7 @@ def run_pipeline(url: str, model_size: str = "base", dry_run=False) -> None:
     """
 
     # refined = refine_transcript(transcript, diarization)
-    interesting_prompt = "All of the top 3 humorous segments of the transcript"
+    interesting_prompt = "humor, novelty, conflict resolution, surprising claims, strong emotions"
     segments = analyze_impact(transcript, interesting_prompt)
     print(f"The most interesting segments are: {segments}")
     clips = generate_clips(video, segments)
