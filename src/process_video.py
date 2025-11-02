@@ -9,9 +9,9 @@ from audio import extract_audio, transcribe_audio, diarize_audio
 from llm_requests import refine_transcript, analyze_impact 
 from clip_editor import generate_clips
 
-def run_pipeline(url: str, model_size: str = "base") -> None:
+def run_pipeline(url: str, model_size: str = "base", dry_run=False) -> None:
     print(f"Downloading youtube video")
-    # video = download_youtube_video(url)
+    video = download_youtube_video(url, dry_run=dry_run)
     video = "downloads/Nek Minute - Original.mp4"
     print(f"Finished Downloading Youtube Video")
 
@@ -57,9 +57,10 @@ def main() -> None:
     )
     parser.add_argument("url", help="YouTube video URL")
     parser.add_argument("--model-size", default="base", help="Whisper model size")
+    parser.add_argument("--dry-run", default=False, action="store_true", help="Do not actually download youtube video")
 
     args = parser.parse_args()
-    run_pipeline(args.url, args.model_size)
+    run_pipeline(args.url, args.model_size, args.dry_run)
 
 
 if __name__ == "__main__":
