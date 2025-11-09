@@ -32,6 +32,11 @@ oauth2.json (user credentials):
   "client_secret": "YOUR_CLIENT_SECRET",
   "scopes": ["https://www.googleapis.com/auth/youtube.upload"]
 }
+
+usage: 
+video_uploader = YoutubeUploader(video_path, video_title, video_desc, category, privacy_status)
+video_uploader.upload()
+
 """
 
 
@@ -47,12 +52,12 @@ class YoutubeUploader:
         # Maximum amount of times the uploader will try to upload until it gives up
         self.MAX_RETRYS = 3
         # Always retry when this exception is raised
-        self.RETRIABLE_EXCEPTIONS = (httplib2.HTTpLib2Error, IOError)
+        self.RETRIABLE_EXCEPTIONS = (httplib2.HttpLib2Error, IOError)
 
         # Always retry when one of these status codes are raised
         self.RETRIABLE_STATUS_CODES = [500, 502, 503, 504]
         self.CLIENT_SECRETS = "client_secrets.json"
-        self.YOUTUBE_UPLOAD_SCOPE = "https://googleapis.com/auth/youtube.upload"
+        self.YOUTUBE_UPLOAD_SCOPE = "https://www.googleapis.com/auth/youtube.upload"
         self.YOUTUBE_API_SERVICE_NAME = "youtube"
         self.YOUTUBE_API_VERSION = "v3"
 
@@ -87,7 +92,7 @@ class YoutubeUploader:
     def get_authenticated_service(self):
         flow = flow_from_clientsecrets(
             self.CLIENT_SECRETS,
-            scope="YOUTUBE_UPLOAD_SCOPE",
+            scope=self.YOUTUBE_UPLOAD_SCOPE,
             message=self.ERROR_MESSAGE,
         )
 
@@ -96,21 +101,23 @@ class YoutubeUploader:
 
         if credentials is None or credentials.invalid:
 
-            args = (
-                self.video_path,
-                self.video_title,
-                self.video_desc,
-                self.category,
-                None,  # keywords/tags
-                self.privacy_status,
+            parser = argparser
+            parser.add_argument(
+                "--noauth_local_webserver", action="store_true", default=True
             )
+            parser.add_argument(
+                "--auth_host_port", default=[8080, 8090], type=int, nargs="*"
+            )
+            parser.add_argument("--logging_level", default="INFO")
+
+            args = parser.parse_args([])
 
             credentials = run_flow(flow, storage, args)
-            return build(
-                self.YOUTUBE_API_SERVICE_NAME,
-                self.YOUTUBE_API_VERSION,
-                http=credentials.authorize(httplib2.Http()),
-            )
+        return build(
+            self.YOUTUBE_API_SERVICE_NAME,
+            self.YOUTUBE_API_VERSION,
+            http=credentials.authorize(httplib2.Http()),
+        )
 
     def initialize_upload(self, youtube):
         tags = None
