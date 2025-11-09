@@ -34,21 +34,14 @@ oauth2.json (user credentials):
 }
 
 usage: 
-video_uploader = YoutubeUploader(video_path, video_title, video_desc, category, privacy_status)
-video_uploader.upload()
+video_uploader = YoutubeUploader()
+video_uploader.upload(video_path, video_title, video_desc, category, privacy_status)
 
 """
 
 
 class YoutubeUploader:
-    def __init__(
-        self,
-        video_path: str,
-        video_title: str,
-        video_desc: str,
-        category: int = 22,
-        privacy_status: str = "public",
-    ):
+    def __init__(self):
         # Maximum amount of times the uploader will try to upload until it gives up
         self.MAX_RETRYS = 3
         # Always retry when this exception is raised
@@ -68,6 +61,14 @@ class YoutubeUploader:
         to set up the client_secrets.json.
         """
 
+    def upload(
+        self,
+        video_path: str,
+        video_title: str,
+        video_desc: str,
+        category: int = 22,
+        privacy_status: str = "public",
+    ):
         # Store arguments
         self.video_path = video_path
         self.video_desc = video_desc
@@ -79,7 +80,6 @@ class YoutubeUploader:
             else "public"
         )
 
-    def upload(self):
         if not os.path.exists(self.video_path):
             print("Video path not found. Exiting")
             return
@@ -113,6 +113,7 @@ class YoutubeUploader:
             args = parser.parse_args([])
 
             credentials = run_flow(flow, storage, args)
+
         return build(
             self.YOUTUBE_API_SERVICE_NAME,
             self.YOUTUBE_API_VERSION,
