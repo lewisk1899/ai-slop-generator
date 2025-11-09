@@ -110,6 +110,8 @@ def fetch_video_metadata(youtube, video_ids: list[str]):
             )
     return rows
 
+def update_database(db = None, analytics = None):
+    pass
 
 def pull_analytics(args):
     youtube = build("youtube", "v3", developerKey=GOOGLE_API_KEY)
@@ -129,6 +131,7 @@ def pull_analytics(args):
         rows.sort(key=lambda r: r["views"], reverse=True)
 
         limit = args.top if args.top and args.top > 0 else len(rows)
+        update_database(None, None) # Placeholder function for updating the database.
         for r in rows[:limit]:
             print(f'{r["views"]:>10} | {r["publishedAt"]} | {r["title"]} | {r["url"]}')
 
