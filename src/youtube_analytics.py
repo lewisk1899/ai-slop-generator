@@ -153,6 +153,13 @@ def parse_arguments():
         default=30,
         help="Days back if --month not provided (default 30).",
     )
+    ap.add_argument(
+        "--sleep",
+        type=int,
+        default=12 * 60 * 60,
+        help="Days back if --month not provided (default 30).",
+    )
+
     ap.add_argument("--top", type=int, default=0, help="If >0, only print top N.")
     return ap.parse_args()
 
@@ -162,7 +169,7 @@ def main():
 
     while True:
         pull_analytics(args)
-        time.sleep(12 * 60 * 60)
+        time.sleep(args.sleep)
 
 
 if __name__ == "__main__":
