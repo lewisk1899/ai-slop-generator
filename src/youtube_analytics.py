@@ -25,7 +25,7 @@ def resolve_channel_id(youtube, handle_or_id: str) -> str:
         raise ValueError(f"Channel ID not found: {handle_or_id}")
     return ch["items"][0]["id"]
 
-def month_window_iso(month: str | None, days: int | None):
+def month_window_iso(month: str = None, days: int = None):
     """
     Returns (publishedAfter, publishedBefore) in RFC3339.
     - If month like '2025-10' is provided, use that calendar month.
@@ -99,28 +99,29 @@ def fetch_video_metadata(youtube, video_ids: list[str]):
 
 def main():
     ap = argparse.ArgumentParser(description="List a channel’s videos within a month, sorted by views desc.")
-    ap.add_argument("--channel", required=True, help="Channel handle (@foo) or channel ID (UCxxxx)")
+    ap.add_argument("--channels", nargs="+", required=True, help="Channel handle (@foo) or channel ID (UCxxxx)")
     ap.add_argument("--month", help="Calendar month YYYY-MM (e.g., 2025-10). If omitted, uses last --days.")
     ap.add_argument("--days", type=int, default=30, help="Days back if --month not provided (default 30).")
     ap.add_argument("--top", type=int, default=0, help="If >0, only print top N.")
     args = ap.parse_args()
 
     youtube = build("youtube", "v3", developerKey=GOOGLE_API_KEY)
-    channel_id = resolve_channel_id(youtube, args.channel)
+    for channel in args.channels:
+        channel_id = resolve_channel_id(youtube, channel)
 
-    published_after, published_before = month_window_iso(args.month, args.days)
-    video_ids = list_recent_video_ids(youtube, channel_id, published_after, published_before)
+        published_after, published_before = month_window_iso(args.month, args.days)
+        video_ids = list_recent_video_ids(youtube, channel_id, published_after, published_before)
 
-    if not video_ids:
-        print("No videos found in the specified window.")
-        return
+        if not video_ids:
+            print("No videos found in the specified window.")
+            return
 
-    rows = fetch_video_metadata(youtube, video_ids)
-    rows.sort(key=lambda r: r["views"], reverse=True)
+        rows = fetch_video_metadata(youtube, video_ids)
+        rows.sort(key=lambda r: r["views"], reverse=True)
 
-    limit = args.top if args.top and args.top > 0 else len(rows)
-    for r in rows[:limit]:
-        print(f'{r["views"]:>10} | {r["publishedAt"]} | {r["title"]} | {r["url"]}')
+        limit = args.top if args.top and args.top > 0 else len(rows)
+        for r in rows[:limit]:
+            print(f'{r["views"]:>10} | {r["publishedAt"]} | {r["title"]} | {r["url"]}')
 
 if __name__ == "__main__":
     main()
