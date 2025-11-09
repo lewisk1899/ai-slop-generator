@@ -4,10 +4,12 @@ from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
 import os
 import argparse
+import time
 
 load_dotenv("ai-slop.env")
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
 
 def resolve_channel_id(youtube, handle_or_id: str) -> str:
     """
@@ -25,6 +27,7 @@ def resolve_channel_id(youtube, handle_or_id: str) -> str:
         raise ValueError(f"Channel ID not found: {handle_or_id}")
     return ch["items"][0]["id"]
 
+
 def month_window_iso(month: str = None, days: int = None):
     """
     Returns (publishedAfter, publishedBefore) in RFC3339.
@@ -33,7 +36,7 @@ def month_window_iso(month: str = None, days: int = None):
     """
     if month:
         start = datetime.fromisoformat(month + "-01").replace(tzinfo=timezone.utc)
-        end = (start + relativedelta(months=1))
+        end = start + relativedelta(months=1)
     else:
         if not days:
             days = 30
@@ -41,23 +44,30 @@ def month_window_iso(month: str = None, days: int = None):
         start = end - timedelta(days=days)
     return start.isoformat(), end.isoformat()
 
-def list_recent_video_ids(youtube, channel_id: str, published_after: str, published_before: str):
+
+def list_recent_video_ids(
+    youtube, channel_id: str, published_after: str, published_before: str
+):
     """
     Use the Search API to list video IDs published in the date window.
     """
     ids = []
     token = None
     while True:
-        resp = youtube.search().list(
-            part="id",
-            channelId=channel_id,
-            publishedAfter=published_after,
-            publishedBefore=published_before,
-            type="video",
-            order="date",
-            maxResults=50,
-            pageToken=token,
-        ).execute()
+        resp = (
+            youtube.search()
+            .list(
+                part="id",
+                channelId=channel_id,
+                publishedAfter=published_after,
+                publishedBefore=published_before,
+                type="video",
+                order="date",
+                maxResults=50,
+                pageToken=token,
+            )
+            .execute()
+        )
         for it in resp.get("items", []):
             vid = it["id"].get("videoId")
             if vid:
@@ -67,6 +77,7 @@ def list_recent_video_ids(youtube, channel_id: str, published_after: str, publis
             break
     return ids
 
+
 def fetch_video_metadata(youtube, video_ids: list[str]):
     """
     Batch fetch snippet + statistics for given IDs.
@@ -74,12 +85,12 @@ def fetch_video_metadata(youtube, video_ids: list[str]):
     """
     rows = []
     for i in range(0, len(video_ids), 50):
-        chunk = video_ids[i:i+50]
-        vi = youtube.videos().list(
-            part="snippet,statistics",
-            id=",".join(chunk),
-            maxResults=50
-        ).execute()
+        chunk = video_ids[i : i + 50]
+        vi = (
+            youtube.videos()
+            .list(part="snippet,statistics", id=",".join(chunk), maxResults=50)
+            .execute()
+        )
         for v in vi.get("items", []):
             vid = v["id"]
             sn = v.get("snippet", {})
@@ -88,29 +99,27 @@ def fetch_video_metadata(youtube, video_ids: list[str]):
             url = f"https://www.youtube.com/watch?v={vid}"
             views = int(st.get("viewCount", 0))
             published = sn.get("publishedAt", "")
-            rows.append({
-                "views": views,
-                "title": title,
-                "url": url,
-                "publishedAt": published,
-                "id": vid,
-            })
+            rows.append(
+                {
+                    "views": views,
+                    "title": title,
+                    "url": url,
+                    "publishedAt": published,
+                    "id": vid,
+                }
+            )
     return rows
 
-def main():
-    ap = argparse.ArgumentParser(description="List a channel’s videos within a month, sorted by views desc.")
-    ap.add_argument("--channels", nargs="+", required=True, help="Channel handle (@foo) or channel ID (UCxxxx)")
-    ap.add_argument("--month", help="Calendar month YYYY-MM (e.g., 2025-10). If omitted, uses last --days.")
-    ap.add_argument("--days", type=int, default=30, help="Days back if --month not provided (default 30).")
-    ap.add_argument("--top", type=int, default=0, help="If >0, only print top N.")
-    args = ap.parse_args()
 
+def pull_analytics(args):
     youtube = build("youtube", "v3", developerKey=GOOGLE_API_KEY)
     for channel in args.channels:
         channel_id = resolve_channel_id(youtube, channel)
 
         published_after, published_before = month_window_iso(args.month, args.days)
-        video_ids = list_recent_video_ids(youtube, channel_id, published_after, published_before)
+        video_ids = list_recent_video_ids(
+            youtube, channel_id, published_after, published_before
+        )
 
         if not video_ids:
             print("No videos found in the specified window.")
@@ -122,6 +131,39 @@ def main():
         limit = args.top if args.top and args.top > 0 else len(rows)
         for r in rows[:limit]:
             print(f'{r["views"]:>10} | {r["publishedAt"]} | {r["title"]} | {r["url"]}')
+
+
+def parse_arguments():
+    ap = argparse.ArgumentParser(
+        description="List a channel’s videos within a month, sorted by views desc."
+    )
+    ap.add_argument(
+        "--channels",
+        nargs="+",
+        required=True,
+        help="Channel handle (@foo) or channel ID (UCxxxx)",
+    )
+    ap.add_argument(
+        "--month",
+        help="Calendar month YYYY-MM (e.g., 2025-10). If omitted, uses last --days.",
+    )
+    ap.add_argument(
+        "--days",
+        type=int,
+        default=30,
+        help="Days back if --month not provided (default 30).",
+    )
+    ap.add_argument("--top", type=int, default=0, help="If >0, only print top N.")
+    return ap.parse_args()
+
+
+def main():
+    args = parse_arguments()
+
+    while True:
+        pull_analytics(args)
+        time.sleep(12 * 60 * 60)
+
 
 if __name__ == "__main__":
     main()
