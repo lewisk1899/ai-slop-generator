@@ -12,7 +12,7 @@ from clip_editor import generate_clips
 def run_pipeline(url: str, model_size: str = "base", dry_run=False) -> None:
     print(f"Downloading youtube video")
     video = download_youtube_video(url, dry_run=dry_run)
-    #video = "downloads/Nek Minute - Original.mp4"
+    video = "downloads/Nek Minute - Original.mp4"
     print(f"Finished Downloading Youtube Video")
 
     print("Extracting Audio")
