@@ -39,7 +39,7 @@ def run_pipeline(url: str, model_size: str = "base", dry_run=False) -> None:
 
     print("Generated clips:")
     for clip in clips:
-        print(f" - {clip}")
+        print(f" - {str(clip)}")
       
     """
     with open("diarization.json", "w") as fh:
