@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  analytics:
+    build:
+      context: .
+      dockerfile: docker/analytics/Dockerfile
+    container_name: youtube_analytics
+    environment:
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+      CHANNELS: "@GoogleDevelopers @NASA"
+      DAYS: 30
+      TOP: 10
