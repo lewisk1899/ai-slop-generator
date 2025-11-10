@@ -18,6 +18,5 @@ ENV TOP=10
 # NOTE: the script itself reads GOOGLE_API_KEY (and any others) from the environment
 CMD ["python", "youtube_analytics.py", \
      "--channels", "@GoogleDevelopers", \
-     "--days", "30", \
-     "--top", "10"]
+     "--days", "30"]
 
