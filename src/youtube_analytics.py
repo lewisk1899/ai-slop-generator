@@ -134,7 +134,7 @@ def fetch_video_metadata(youtube, video_ids: list[str]):
 
 
 def update_database(db=None, analytics=None):
-    logger.debug("update_database() placeholder called.")
+    logger.info("update_database() placeholder called.")
     pass
 
 
