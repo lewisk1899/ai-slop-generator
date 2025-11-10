@@ -220,6 +220,23 @@ def parse_arguments():
 
 def main():
     args = parse_arguments()
+
+    # Log runtime configuration (safe, no secrets)
+    sleep_hours = args.sleep / 3600 if args.sleep > 3600 else args.sleep
+    sleep_unit = "hours" if args.sleep > 3600 else "seconds"
+    channels_str = ", ".join(args.channels) if isinstance(args.channels, list) else args.channels
+
+    logger.info("Starting YouTube Analytics container with configuration:")
+    logger.info(f"  Channels: {channels_str}")
+    logger.info(f"  Days: {args.days}")
+    logger.info(f"  Top: {args.top}")
+    logger.info(f"  Sleep interval: {sleep_hours:.1f} {sleep_unit}")
+
+    # Sanity check for API key
+    if not args.google_api_key or args.google_api_key.strip() == "":
+        logger.critical("Missing Google API key. Please set GOOGLE_API_KEY in your environment or .env file.")
+        sys.exit(1)
+
     while True:
         try:
             pull_analytics(args)
@@ -227,7 +244,7 @@ def main():
             time.sleep(args.sleep)
         except Exception as e:
             logger.exception(f"Unexpected error occurred: {e}")
-            time.sleep(60)
+            time.sleep(args.sleep)
 
 
 if __name__ == "__main__":
