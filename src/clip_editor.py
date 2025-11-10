@@ -1,17 +1,18 @@
-from typing import List, Dict
-from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 import os
 import subprocess
+from typing import List
+from src.models.clip import Clips, Clip  # import your Pydantic models
 
-def generate_clips(
-    video_path: str, segments: List[Dict[str, float]], output_dir: str = "clips"
-) -> List[str]:
+
+def generate_clips(video_path: str, clips: Clips, output_dir: str = "clips") -> List[str]:
     """
-    Generate video clips using ffmpeg via subprocess.
-    Each segment dict should contain:
-        - "start_time": float
-        - "end_time": float
-        - optional "title": str
+    Generate video clips using ffmpeg.
+    Accepts a Pydantic Clips object (list of Clip instances).
+
+    Each Clip defines:
+        - start_time: float
+        - end_time: float
+        - title: str
     """
     os.makedirs(output_dir, exist_ok=True)
     video_path = os.path.abspath(video_path)
@@ -19,17 +20,19 @@ def generate_clips(
 
     clip_paths = []
 
-    for idx, segment in enumerate(segments):
-        start = float(segment["start_time"])
-        end = float(segment["end_time"])
+    for idx, clip in enumerate(clips.clips):
+        start = float(clip.start_time)
+        end = float(clip.end_time)
         duration = end - start
 
         if duration <= 0:
-            print(f"Skipping invalid segment {idx}: start={start}, end={end}")
+            print(f"Skipping invalid clip {idx}: start={start}, end={end}")
             continue
 
-        title = segment.get("title", f"clip_{idx}")
-        clip_path = os.path.join(output_dir, f"{title}.mp4")
+        title = clip.title or f"clip_{idx}"
+        # Sanitize title for filesystem (remove illegal characters)
+        safe_title = "".join(c if c.isalnum() or c in (' ', '-', '_') else "_" for c in title)
+        clip_path = os.path.join(output_dir, f"{safe_title}.mp4")
 
         cmd = [
             "ffmpeg",
@@ -45,9 +48,9 @@ def generate_clips(
         result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         if result.returncode != 0:
-            print(f"ffmpeg failed for segment {idx}:\n{result.stderr.decode()}")
+            print(f"[ERROR] ffmpeg failed for clip {idx}:\n{result.stderr.decode()}")
         elif os.path.getsize(clip_path) < 1000:
-            print(f" Empty/short output for {clip_path}")
+            print(f"[WARN] Empty/short output for {clip_path}")
         else:
             clip_paths.append(clip_path)
 
