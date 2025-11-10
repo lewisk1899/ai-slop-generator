@@ -1,0 +1,2 @@
+CREATE TABLE "public"."Video" ("id" uuid NOT NULL DEFAULT gen_random_uuid(), "title" text, "views" integer, "publishedAt" timestamptz, "url" text, "channelID" uuid NOT NULL, PRIMARY KEY ("id") , FOREIGN KEY ("channelID") REFERENCES "public"."Channel"("id") ON UPDATE restrict ON DELETE restrict, UNIQUE ("id"));COMMENT ON TABLE "public"."Video" IS E'Table containing information about videos on YouTube.';
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
