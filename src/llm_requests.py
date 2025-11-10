@@ -3,6 +3,7 @@ import os
 import json
 from typing import List, Dict
 from dotenv import load_dotenv
+from models.clip import Clips 
 
 load_dotenv("ai-slop.env")
 
@@ -37,7 +38,7 @@ def refine_transcript(transcript: Dict, diarization) -> str:
     return response.choices[0].message.content
 
 
-def analyze_impact(transcript_text: str, interesting_prompt: str) -> List[Dict[str, float]]:
+def analyze_impact(transcript_text: str, interesting_prompt: str) -> Clips:
     """Ask the OpenAI API for a list of impactful segments."""
     client = OpenAI(api_key = OPENAI_API_KEY)
 
@@ -87,5 +88,7 @@ def analyze_impact(transcript_text: str, interesting_prompt: str) -> List[Dict[s
         model="gpt-5-mini",
         input=prompt,
     )
-    data = json.loads(response.output_text)
-    return data 
+
+    data = {"clips": json.loads(response.output_text)}
+    clips = Clips(**data)
+    return clips 

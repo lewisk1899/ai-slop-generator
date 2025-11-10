@@ -1,0 +1,5 @@
+google-api-python-client
+sqlalchemy
+python-dateutil
+dotenv
+loguru
