@@ -187,6 +187,18 @@ def parse_arguments():
         help="Google API Key to access youtube metadata.",
     )
     ap.add_argument(
+        "--database-host",
+        type=str,
+        default="localhost",
+        help="Database hostname (default is localhost).",
+    )
+    ap.add_argument(
+        "--database-port",
+        type=str,
+        default="8080",
+        help="Database port (default is 8080).",
+    )
+    ap.add_argument(
         "--month",
         help="Calendar month YYYY-MM (e.g., 2025-10). If omitted, uses last --days.",
     )
