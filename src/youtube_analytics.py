@@ -8,11 +8,39 @@ import argparse
 import time
 import sys
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+# Adjust these imports to match your package/module layout
+from models.analytics import Base, Channel, Video
+from crud.crud import channel_crud, video_crud
+
 load_dotenv()
+
+# --- Database setup ---
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is not set in the environment")
+
+engine = create_engine(DATABASE_URL, future=True)
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine,
+    future=True,
+)
+
+# For dev: create tables if they don't exist. In prod you'd use migrations.
+Base.metadata.create_all(bind=engine)
 
 # Configure loguru
 logger.remove()
-logger.add(sys.stderr, level="INFO", format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | {message}")
+logger.add(
+    sys.stderr,
+    level="INFO",
+    format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | {message}",
+)
+
 
 def resolve_channel_id(youtube, handle_or_id: str) -> str:
     """
@@ -133,9 +161,48 @@ def fetch_video_metadata(youtube, video_ids: list[str]):
     return rows
 
 
-def update_database(db=None, analytics=None):
-    logger.info("update_database() placeholder called.")
-    pass
+def update_database(db, channel_handle: str, rows: list[dict]):
+    """
+    Persist the channel + its videos into the database.
+
+    - channel_handle: the handle string from args (e.g. '@GoogleDevelopers')
+    - rows: list of dicts from fetch_video_metadata()
+    """
+    # Ensure channel exists (by handle)
+    channel = channel_crud.get_by_handle(db, channel_handle)
+    if channel is None:
+        channel = channel_crud.create(db, {"handle": channel_handle})
+
+    # Avoid inserting duplicates on repeated runs (by URL)
+    existing_videos = video_crud.get_by_channel(db, channel.id)
+    existing_urls = {v.url for v in existing_videos}
+
+    videos_to_create: list[dict] = []
+    for r in rows:
+        if r["url"] in existing_urls:
+            continue
+
+        # r["publishedAt"] is RFC3339 with 'Z' at the end
+        published_at = datetime.fromisoformat(
+            r["publishedAt"].replace("Z", "+00:00")
+        )
+
+        videos_to_create.append(
+            {
+                "channel_id": channel.id,
+                "title": r["title"],
+                "views": r["views"],
+                "published_at": published_at,
+                "url": r["url"],
+            }
+        )
+
+    if not videos_to_create:
+        logger.info(f"No new videos to insert for {channel_handle}")
+        return
+
+    created = video_crud.create_many(db, videos_to_create)
+    logger.info(f"Inserted {len(created)} new videos for {channel_handle}")
 
 
 def pull_analytics(args):
@@ -145,29 +212,36 @@ def pull_analytics(args):
         logger.critical(f"Failed to initialize YouTube API client: {e}")
         return
 
-    for channel in args.channels:
-        try:
-            logger.info(f"Processing channel: {channel}")
-            channel_id = resolve_channel_id(youtube, channel)
-            published_after, published_before = month_window_iso(args.month, args.days)
+    # one DB session per pull cycle
+    with SessionLocal() as db:
+        for channel in args.channels:
+            try:
+                logger.info(f"Processing channel: {channel}")
+                channel_id = resolve_channel_id(youtube, channel)
+                published_after, published_before = month_window_iso(args.month, args.days)
 
-            video_ids = list_recent_video_ids(youtube, channel_id, published_after, published_before)
-            if not video_ids:
-                logger.warning(f"No videos found for {channel} in the specified window.")
+                video_ids = list_recent_video_ids(
+                    youtube, channel_id, published_after, published_before
+                )
+                if not video_ids:
+                    logger.warning(f"No videos found for {channel} in the specified window.")
+                    continue
+
+                rows = fetch_video_metadata(youtube, video_ids)
+                rows.sort(key=lambda r: r["views"], reverse=True)
+                limit = args.top if args.top and args.top > 0 else len(rows)
+
+                # write to DB
+                update_database(db, channel, rows)
+
+                for r in rows[:limit]:
+                    logger.info(
+                        f'{r["views"]:>10} | {r["publishedAt"]} | {r["title"]} | {r["url"]}'
+                    )
+
+            except Exception as e:
+                logger.error(f"Failed to process channel {channel}: {e}")
                 continue
-
-            rows = fetch_video_metadata(youtube, video_ids)
-            rows.sort(key=lambda r: r["views"], reverse=True)
-            limit = args.top if args.top and args.top > 0 else len(rows)
-
-            update_database(None, None)  # Placeholder
-
-            for r in rows[:limit]:
-                logger.info(f'{r["views"]:>10} | {r["publishedAt"]} | {r["title"]} | {r["url"]}')
-
-        except Exception as e:
-            logger.error(f"Failed to process channel {channel}: {e}")
-            continue
 
 
 def parse_arguments():
@@ -249,3 +323,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
