@@ -126,6 +126,18 @@ class VideoPipeline:
 # CLI entrypoint
 # -----------------------------
 
+def run_pipeline_from_url(url: str, model_size: str = "base", dry_run: bool = False):
+    pipeline = VideoPipeline(
+        downloader=DefaultDownloader(),
+        audio_extractor=DefaultAudioExtractor(),
+        transcriber=DefaultTranscriber(),
+        analyzer=DefaultAnalyzer(),
+        clip_generator=DefaultClipGenerator(),
+    )
+    return pipeline.run(url, model_size, dry_run)
+
+
+# KEEP this around if you still want CLI access
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Run the end-to-end video processing pipeline"
@@ -135,17 +147,4 @@ def main() -> None:
     parser.add_argument("--dry-run", default=False, action="store_true")
     args = parser.parse_args()
 
-    # Inject default implementations
-    pipeline = VideoPipeline(
-        downloader=DefaultDownloader(),
-        audio_extractor=DefaultAudioExtractor(),
-        transcriber=DefaultTranscriber(),
-        analyzer=DefaultAnalyzer(),
-        clip_generator=DefaultClipGenerator(),
-    )
-
-    pipeline.run(args.url, args.model_size, args.dry_run)
-
-
-if __name__ == "__main__":
-    main()
+    run_pipeline_from_url(args.url, args.model_size, args.dry_run)

@@ -36,5 +36,24 @@ services:
       postgres:
         condition: service_healthy
 
+  clip-generator:
+    build:
+      context: .
+      dockerfile: docker/clip-generator/Dockerfile
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      PROCESS_INTERVAL_HOURS: 6
+    command: ["--channel", "@GoogleDevelopers", "--loop"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            device_ids: ['0']
+            capabilities: [gpu]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   db_data:

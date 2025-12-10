@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import declarative_base, relationship
+from datetime import datetime
 
 Base = declarative_base()
 
@@ -19,5 +20,8 @@ class Video(Base):
     views = Column(Integer, nullable=False)
     published_at = Column(DateTime, nullable=False)
     url = Column(String, nullable=False)
+
+    # NEW FIELD
+    processed_at = Column(DateTime, nullable=True, default=None)
 
     channel = relationship("Channel", back_populates="videos")
